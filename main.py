@@ -1,10 +1,15 @@
 import discord
+from discord.ext import commands
 import pymysql.cursors
 import json
+from discord.utils import get
+from asyncio import sleep
+from youtube_dl import YoutubeDL
 
-client = discord.Client()
+client_commands = commands.Bot(command_prefix='!')
 
 
+# client = discord.Client()
 def getConnection():
     connection = pymysql.connect(host='eu-cdbr-west-02.cleardb.net',
                                  user='ba7528f2bb07ee',
@@ -34,24 +39,70 @@ finally:
     getConnection().close()
 
 
-@client.event
+@client_commands.event
 async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
-    print(client.user.id)
-    print(client.user.name)
+    print('We have logged in as {0.user}'.format(client_commands))
+    print(client_commands.user.id)
+    print(client_commands.user.name)
 
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+# @client.event
+# async def on_message(message):
+#     if message.author == client.user:
+#         return
+#
+#     if message.content.startswith("get"):
+#         print(message.author.id)
+#         print(message.author.name)
+#
+#         user = await client.fetch_user(message.author.id)
+#         await user.send("hello")
 
-    if message.content.startswith("get"):
-        print(message.author.id)
-        print(message.author.name)
-
-        user = await client.fetch_user(message.author.id)
-        await user.send("hello")
+YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'False'}
+FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
 
-client.run(DISCORD_TOKEN)
+@client_commands.command()
+async def hello(ctx):
+    await ctx.send("Hello i am discord bot")
+
+
+@client_commands.command()
+async def play(ctx, arg):
+    global voice
+    print("Work")
+    channel = ctx.message.author.voice.channel
+    voice = get(client_commands.voice_clients, guild=ctx.guild)
+    if voice and voice.is_connected():
+        await voice.move_to(channel)
+    else:
+        voice = await channel.connect()
+        await ctx.send("Bot is connected to channel")
+    if voice.is_playing():
+        await ctx.send(f'{ctx.message.author.mention}, music go')
+    else:
+        with YoutubeDL(YDL_OPTIONS) as ydl:
+            info = ydl.extract_info(arg, download=False)
+
+        URL = info['formats'][0]['url']
+
+        voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=URL, **FFMPEG_OPTIONS))
+
+        while voice.is_playing():
+            await sleep(1)
+        if not voice.is_paused():
+            await voice.disconnect()
+
+
+@client_commands.command()
+async def leave(ctx):
+    print("Work")
+    channel = ctx.message.author.voice.channel
+    voice = get(client_commands.voice_clients, guild=ctx.guild)
+    if voice and voice.is_connected():
+        await voice.disconnect()
+    else:
+        await ctx.send("Bot leave ", channel)
+
+
+client_commands.run(DISCORD_TOKEN)
