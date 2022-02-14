@@ -2,6 +2,7 @@ import discord
 import pymysql.cursors
 import json
 
+
 client = discord.Client()
 
 
@@ -55,3 +56,5 @@ async def on_message(message):
 
 
 client.run(DISCORD_TOKEN)
+
+
