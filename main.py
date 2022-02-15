@@ -88,9 +88,8 @@ async def play(ctx, arg):
         await ctx.send(f'{ctx.message.author.mention}, music go')
     else:
         with YoutubeDL(ydl_opts) as ydl:
-            file = ydl.extract_info(arg, download=True)
+            file = ydl.extract_info(arg, download=False)
             path = str(file['title']) + "-" + str(file['id'] + ".mp3")
-
 
         voice.play(discord.FFmpegPCMAudio(path))
 
