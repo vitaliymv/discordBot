@@ -1,11 +1,12 @@
 import discord
+import requests
 from discord.ext import commands
 import pymysql.cursors
 import json
 from discord.utils import get
 from asyncio import sleep
 from youtube_dl import YoutubeDL
-
+from requests import get
 
 client_commands = commands.Bot(command_prefix='!')
 
@@ -60,16 +61,27 @@ async def on_ready():
 #         await user.send("hello")
 
 ydl_opts = {
-            "postprocessors": [{
-                "key": "FFmpegExtractAudio", # download audio only
-                "preferredcodec": "mp3", # other acceptable types "wav" etc.
-                "preferredquality": "192" # 192kbps audio
-            }],
-            "format": "bestaudio/best",
-            "outtmpl": "test.mp3" # downloaded file name
-        }
+    "postprocessors": [{
+        "key": "FFmpegExtractAudio",  # download audio only
+        "preferredcodec": "mp3",  # other acceptable types "wav" etc.
+        "preferredquality": "192"  # 192kbps audio
+    }],
+    "format": "bestaudio/best",
+    "outtmpl": "test.mp3"  # downloaded file name
+}
 
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+
+
+def search(query):
+    with YoutubeDL({'format': 'bestaudio', 'noplaylist': 'True'}) as ydl:
+        try:
+            requests.get(query)
+        except:
+            info = ydl.extract_info(f"ytsearch:{query}", download=False)['entries'][0]
+        else:
+            info = ydl.extract_info(query, download=False)
+    return (info, info['formats'][0]['url'])
 
 
 @client_commands.command()
@@ -90,15 +102,21 @@ async def play(ctx, arg):
     if voice.is_playing():
         await ctx.send(f'{ctx.message.author.mention}, music go')
     else:
-        with YoutubeDL(ydl_opts) as ydl:
-            info = ydl.download([arg])
-        print(info)
+        # with YoutubeDL(ydl_opts) as ydl:
+        #     info = ydl.download([arg])
+        # print(info)
         # URL = info['formats'][0]['url']
         # print(URL)
 
+        print('search arg')
+        print(arg)
+        video, source = search(arg)
+        print(video)
+        print(source)
+
         print('play')
         # voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=URL, **FFMPEG_OPTIONS))
-        voice.play(discord.FFmpegPCMAudio('test.mp3'))
+        voice.play(discord.FFmpegPCMAudio(source, **FFMPEG_OPTIONS), after=lambda e: print('done', e))
 
         while voice.is_playing():
             await sleep(1)
