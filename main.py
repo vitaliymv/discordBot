@@ -59,13 +59,14 @@ async def on_ready():
 #         await user.send("hello")
 
 ydl_opts = {
-    'format': 'bestaudio/best',
-    'postprocessors': [{
-        'key': 'FFmpegExtractAudio',
-        'preferredcodec': 'mp3',
-        'preferredquality': '192',
-    }],
+    'format': 'worstaudio/best',
+    'noplaylist': 'True',
+    'simulate': 'True',
+    'preferredquality': '192',
+    'preferredcodec': 'mp3',
+    'key': 'FFmpegExtractAudio'
 }
+
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
 
@@ -90,7 +91,7 @@ async def play(ctx, arg):
         with YoutubeDL(ydl_opts) as ydl:
             file = ydl.extract_info(arg, download=False)
             path = str(file['title']) + "-" + str(file['id'] + ".mp3")
-
+            print(path)
         voice.play(discord.FFmpegPCMAudio(path))
 
         while voice.is_playing():
