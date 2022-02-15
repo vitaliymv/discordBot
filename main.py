@@ -1,4 +1,10 @@
+import re
+import urllib
+
+import pafy
+import requests
 import discord
+from discord import FFmpegPCMAudio
 from discord.ext import commands
 import pymysql.cursors
 import json
@@ -81,14 +87,20 @@ async def play(ctx, arg):
     if voice.is_playing():
         await ctx.send(f'{ctx.message.author.mention}, music go')
     else:
-        with YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(arg, download=False)
-        print(info)
-        URL = info['formats'][0]['url']
 
-        print('play')
-        # voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=URL, **FFMPEG_OPTIONS))
-        voice.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
+        html = urllib.request.urlopen(arg)
+        video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+
+        await ctx.send("https://www.youtube.com/watch?v=" + video_ids[0])
+
+        song = pafy.new(video_ids[0])  # creates a new pafy object
+
+        audio = song.getbestaudio()  # gets an audio source
+
+        source = FFmpegPCMAudio(audio.url,
+                                **FFMPEG_OPTIONS)  # converts the youtube audio source into a source discord can use
+
+        voice.play(source)  # play the source
 
         while voice.is_playing():
             await sleep(1)
