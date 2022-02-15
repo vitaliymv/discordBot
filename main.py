@@ -4,9 +4,7 @@ import discord
 from discord.ext import commands
 import pymysql.cursors
 import json
-from discord.utils import get
-from asyncio import sleep
-from youtube_dl import YoutubeDL
+import youtube_dl
 
 
 client_commands = commands.Bot(command_prefix='!')
@@ -61,17 +59,27 @@ async def on_ready():
 #         user = await client.fetch_user(message.author.id)
 #         await user.send("hello")
 
-ytdl_format_options = {'format': 'bestaudio'}
+youtube_dl.utils.bug_reports_message = lambda: ''
 
-FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+ytdl_format_options = {
+    'format': 'bestaudio/best',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    'source_address': '0.0.0.0'  # bind to ipv4 since ipv6 addresses cause issues sometimes
+}
 
+ffmpeg_options = {
+    'options': '-vn'
+}
 
-@client_commands.command()
-async def hello(ctx):
-    await ctx.send("Hello i am discord bot")
-
-
-ytdl = YoutubeDL(ytdl_format_options)
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -93,7 +101,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = data['entries'][0]
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **FFMPEG_OPTIONS), data=data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
 class Music(commands.Cog):
@@ -137,17 +145,6 @@ class Music(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Music(bot))
-
-
-@client_commands.command()
-async def leave(ctx):
-    print("Work")
-    channel = ctx.message.author.voice.channel
-    voice = get(client_commands.voice_clients, guild=ctx.guild)
-    if voice and voice.is_connected():
-        await voice.disconnect()
-    else:
-        await ctx.send("Bot leave ", channel)
 
 
 client_commands.run(DISCORD_TOKEN)
