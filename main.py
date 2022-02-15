@@ -70,7 +70,6 @@ async def hello(ctx):
 @client_commands.command()
 async def play(ctx, arg):
     global voice
-    print("Work")
     channel = ctx.message.author.voice.channel
     voice = get(client_commands.voice_clients, guild=ctx.guild)
     if voice and voice.is_connected():
@@ -85,8 +84,9 @@ async def play(ctx, arg):
             info = ydl.extract_info(arg, download=False)
 
         URL = info['formats'][0]['url']
+        print(URL)
 
-        voice.play(discord.FFmpegPCMAudio(source=URL, **FFMPEG_OPTIONS))
+        voice.play(discord.FFmpegPCMAudio(URL))
 
         while voice.is_playing():
             await sleep(1)
