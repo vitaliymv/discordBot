@@ -98,7 +98,7 @@ async def play(ctx, arg):
 
         print('play')
         # voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=URL, **FFMPEG_OPTIONS))
-        voice.play(discord.FFmpegPCMAudio('test.mp3', **FFMPEG_OPTIONS))
+        voice.play(discord.FFmpegPCMAudio('test.mp3'))
 
         while voice.is_playing():
             await sleep(1)
