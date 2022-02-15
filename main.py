@@ -83,6 +83,7 @@ async def play(ctx, arg):
     else:
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(arg, download=False)
+        print(info)
         URL = info['formats'][0]['url']
 
         # voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=URL, **FFMPEG_OPTIONS))
