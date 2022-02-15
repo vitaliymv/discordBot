@@ -4,6 +4,8 @@ import discord
 from discord.ext import commands
 import pymysql.cursors
 import json
+from discord.utils import get
+from asyncio import sleep
 import youtube_dl
 
 
@@ -146,5 +148,6 @@ class Music(commands.Cog):
 def setup(bot):
     bot.add_cog(Music(bot))
 
+setup(client_commands)
 
 client_commands.run(DISCORD_TOKEN)
