@@ -73,7 +73,7 @@ ydl_opts = {
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
 
-def search(query):
+async def search(query):
     with YoutubeDL({'format': 'bestaudio', 'noplaylist': 'True'}) as ydl:
         try:
             requests.get(query)
@@ -81,7 +81,7 @@ def search(query):
             info = ydl.extract_info(f"ytsearch:{query}", download=False)['entries'][0]
         else:
             info = ydl.extract_info(query, download=False)
-    return (info, info['formats'][0]['url'])
+    return info, info['formats'][0]['url']
 
 
 @client_commands.command()
