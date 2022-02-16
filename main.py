@@ -87,9 +87,7 @@ async def play(ctx, arg):
     else:
         voice = await channel.connect()
         await ctx.send("Bot is connected to channel")
-    if voice.is_playing():
-        await ctx.send(f'{ctx.message.author.mention}, music go')
-    else:
+
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(arg, download=False)
         music_url = info['formats'][0]['url']
