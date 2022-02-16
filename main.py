@@ -1,4 +1,3 @@
-import discord
 from discord import FFmpegPCMAudio
 from discord.ext import commands
 import pymysql.cursors
@@ -10,7 +9,6 @@ from youtube_dl import YoutubeDL
 client_commands = commands.Bot(command_prefix='!')
 
 
-# client = discord.Client()
 def getConnection():
     connection = pymysql.connect(host='eu-cdbr-west-02.cleardb.net',
                                  user='ba7528f2bb07ee',
@@ -69,6 +67,16 @@ async def hello(ctx):
     await ctx.send("Hello i am discord bot")
 
 
+song_queue = []
+
+
+def play_next(ctx, arg):
+    if len(song_queue) >= 1:
+        del song_queue[0]
+        voice = get(client_commands.voice_clients, guild=ctx.guild)
+        voice.play(FFmpegPCMAudio(arg, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx, arg))
+
+
 @client_commands.command()
 async def play(ctx, arg):
     global voice
@@ -86,9 +94,9 @@ async def play(ctx, arg):
             info = ydl.extract_info(arg, download=False)
         music_url = info['formats'][0]['url']
         print(music_url)
-
+        song_queue.append(music_url)
         # voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=URL, **FFMPEG_OPTIONS))
-        voice.play(FFmpegPCMAudio(music_url, **FFMPEG_OPTIONS), after=lambda e: print('done', e))
+        voice.play(FFmpegPCMAudio(music_url, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx, arg))
 
         while voice.is_playing():
             await sleep(1)
