@@ -71,10 +71,11 @@ song_queue = []
 
 
 def play_next(ctx, arg):
-    if len(song_queue) >= 1:
-        del song_queue[0]
-        voice = get(client_commands.voice_clients, guild=ctx.guild)
-        voice.play(FFmpegPCMAudio(arg, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx, arg))
+    pass
+    #if len(song_queue) >= 1:
+        #del song_queue[0]
+        #voice = get(client_commands.voice_clients, guild=ctx.guild)
+        #voice.play(FFmpegPCMAudio(arg, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx, arg))
 
 
 @client_commands.command()
