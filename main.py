@@ -71,11 +71,10 @@ song_queue = []
 
 
 def play_next(ctx, arg):
-    pass
-    #if len(song_queue) >= 1:
-        #del song_queue[0]
-        #voice = get(client_commands.voice_clients, guild=ctx.guild)
-        #voice.play(FFmpegPCMAudio(arg, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx, arg))
+    if len(song_queue) >= 1:
+        del song_queue[0]
+        voice = get(client_commands.voice_clients, guild=ctx.guild)
+        voice.play(FFmpegPCMAudio(arg, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx, arg))
 
 
 @client_commands.command()
@@ -88,12 +87,13 @@ async def play(ctx, arg):
     else:
         voice = await channel.connect()
         await ctx.send("Bot is connected to channel")
-
+    if voice.is_playing():
+        await ctx.send(f'{ctx.message.author.mention}, music go')
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(arg, download=False)
         music_url = info['formats'][0]['url']
-        print(music_url)
         song_queue.append(music_url)
+        print(song_queue)
         # voice.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=URL, **FFMPEG_OPTIONS))
         voice.play(FFmpegPCMAudio(music_url, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx, arg))
 
